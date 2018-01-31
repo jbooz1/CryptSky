@@ -1,1 +1,2 @@
-pycryptodome
+pycryptodomex
+py2exe
