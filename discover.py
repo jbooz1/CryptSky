@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-import shlex
+
 
 
 def discoverFiles(startpath):

