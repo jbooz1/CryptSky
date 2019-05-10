@@ -46,3 +46,9 @@ But...
 world more secure you first have to make it less secure. To make better AV and
 signatures, you must first make better malware. And that's what we're doing
 here.
+
+
+## Usage
+You probably want to compile all of this into one easy to use executable (.exe) to use on a windows target.  
+To do that, you will need pyinstaller (`pip install pyinstaller`)  
+Use the command `pyinstaller -F main.spec` to compile to a single exe file

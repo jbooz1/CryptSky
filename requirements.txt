@@ -1,2 +1,3 @@
 pycryptodomex
 py2exe
+pyinstaller

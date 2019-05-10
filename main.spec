@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['main.py'],
-             pathex=['C:\\Users\\jarre\\OneDrive\\Documents\\Red Team\\CryptSky'],
+a = Analysis(['main.py', 'discover.py', 'modify.py', 'setup.py'],
+             pathex=['C:\\Users\\jarre\\Desktop\\Ex3\\CryptSky'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -13,7 +13,8 @@ a = Analysis(['main.py'],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
-             cipher=block_cipher)
+             cipher=block_cipher,
+             noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
@@ -21,9 +22,11 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
+          [],
           name='main',
           debug=False,
+          bootloader_ignore_signals=False,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
-          console=True )
+          console=False )
